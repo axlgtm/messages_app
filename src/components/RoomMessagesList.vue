@@ -1,17 +1,31 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useRoomMessageStore } from "../stores/roomMessageStore";
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { ref } from 'vue';
+
+const activeRoomId = ref(null);
 
 const roomMessageStore = useRoomMessageStore()
 const router = useRouter()
+const route = useRoute()
 
 const roomMessage = computed(() => roomMessageStore.roomMessages)
 
 const clickMessage = (roomMessageId) => {
   roomMessageStore.setActiveRoomMessage(roomMessageId)
   router.push(`/message/${roomMessageId}`)
+  activeRoomId.value = roomMessageId;
 }
+
+onMounted(() => {
+  activeRoomId.value = route.params.roomId
+  console.log('masuk')
+})
+
+watch(() => route.params.roomId, (newId) => {
+  activeRoomId.value = newId;
+});
 // const selectRoomMessage = (roomMessageId) => {
 //   roomMessageStore.setActiveRoomMessage(roomMessageId)
 // }
@@ -23,7 +37,10 @@ const clickMessage = (roomMessageId) => {
     <div
       v-for="room in roomMessage"
       :key="room.room_id"
-      class="gap-2 flex border-b-slate-300 p-3 shadow-md mb-2 bg-white rounded cursor-pointer"
+      :class="[
+        'gap-2 flex p-3 shadow-md mb-2 bg-white rounded cursor-pointer border-4 border-transparent',
+        room.room_id == activeRoomId ? ' !border-teal-300': ''
+      ]"
       @click="clickMessage(room.room_id)"
     >
 
